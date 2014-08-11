@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="HelloCxfServiceService" targetNamespace="http://service.web.cd.com/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://service.web.cd.com/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http">
+  <wsdl:types>
+    <xs:schema elementFormDefault="unqualified" targetNamespace="http://service.web.cd.com/" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="getHello" type="tns:getHello"/>
+      <xs:element name="getHelloResponse" type="tns:getHelloResponse"/>
+      <xs:element name="helloInputDTO" type="tns:helloInputDTO"/>
+      <xs:element name="helloOutputDTO" type="tns:helloOutputDTO"/>
+      <xs:complexType name="getHello">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="req" type="tns:helloInputDTO"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="helloInputDTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="helloMsg" type="xs:string"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="owner" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getHelloResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="tns:helloOutputDTO"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="helloOutputDTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string"/>
+          <xs:element minOccurs="0" name="owner" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="getHelloResponse">
+    <wsdl:part element="tns:getHelloResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="getHello">
+    <wsdl:part element="tns:getHello" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="HelloCxfService">
+    <wsdl:operation name="getHello">
+      <wsdl:input message="tns:getHello" name="getHello"/>
+      <wsdl:output message="tns:getHelloResponse" name="getHelloResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="HelloCxfServiceServiceSoapBinding" type="tns:HelloCxfService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getHello">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getHello">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getHelloResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="HelloCxfServiceService">
+    <wsdl:port binding="tns:HelloCxfServiceServiceSoapBinding" name="HelloCxfServicePort">
+      <soap:address location="http://localhost:8080/CamelCXFDemo/webservices/hello"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
