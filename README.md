@@ -1,4 +1,0 @@
-cameldemos
-==========
-
-Apache Camel Demos
