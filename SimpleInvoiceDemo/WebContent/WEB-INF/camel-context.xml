@@ -1,0 +1,135 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:cxf="http://camel.apache.org/schema/cxf"
+	xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+            http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+            http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd">
+
+
+	<import resource="classpath:META-INF/cxf/cxf.xml"/>
+	
+	<cxf:cxfEndpoint id="invoiceService"
+					 address="/invoice"	 
+					 serviceClass="com.seinv.web.service.InvoiceService"
+					 wsdlURL="invoice_1.wsdl">
+	</cxf:cxfEndpoint>
+	
+	<bean id="centralSucceedResponseTranslator" 
+		  class="com.seinv.web.translator.CentralSuccedResponseTranslator"/>
+
+	<bean id="errorResponseTranslator"
+		  class="com.seinv.web.translator.ErrorResponseTranslator"/>
+
+	<bean id="aTypeValidationProcessor"
+		  class="com.seinv.web.process.ATypeDocValidationProcessor" />
+		  
+	<bean id="bTypeValidationProcessor"
+		  class="com.seinv.web.process.BTypeDocValidationProcessor" />
+		  
+	<bean id="filenameGenerator" 
+		  class="com.seinv.web.bean.FilenameGenerator"/>
+		  		  				 
+  	<camel:camelContext xmlns="http://camel.apache.org/schema/spring">
+  				
+		<camel:route>
+			<camel:from uri="cxf:bean:invoiceService" />
+			<camel:convertBodyTo type="com.seinv.web.dto.InvoiceSenderEnvelope"/>
+			<camel:choice>
+				<camel:when>
+					<camel:simple>${body.getEnvType} == 0</camel:simple>
+					<camel:to uri="direct:atype"/>
+					
+				</camel:when>
+				<camel:when>
+					<camel:simple>${body.getEnvType} == 1</camel:simple>
+					<camel:to uri="direct:btype"/>
+				</camel:when>
+				<camel:otherwise>					
+					<camel:bean ref="errorResponseTranslator" method="makeErrorResponse('Geçersiz Döküman Tipi')"></camel:bean>	
+				</camel:otherwise>
+			</camel:choice>
+								
+		</camel:route>
+		
+		<!--  Temel Fatura -->
+		<camel:route>
+			<camel:from uri="direct:atype"/>
+			<camel:process ref="aTypeValidationProcessor"/>
+			<camel:onException>
+				<camel:exception>com.seinv.web.exception.ValidationException</camel:exception>
+				<camel:bean ref="errorResponseTranslator" method="makeErrorResponse('Geçersiz Döküman Tipi')"></camel:bean>
+			</camel:onException>
+			<camel:to uri="direct:atypeComp"/>					
+		</camel:route>
+		
+		<!-- Ticari Fatura -->
+		<camel:route>
+			<camel:from uri="direct:btype"/>
+			<camel:process ref="bTypeValidationProcessor"/>
+			<camel:onException>
+				<camel:exception>com.seinv.web.exception.ValidationException</camel:exception>
+				<camel:bean ref="errorResponseTranslator" method="makeErrorResponse('Geçersiz Döküman Tipi')"></camel:bean>
+			</camel:onException>
+			<camel:to uri="direct:btypeComp"/>						
+		</camel:route>
+		
+		<camel:route>
+			<camel:from uri="direct:atypeComp"/>
+			<setHeader headerName="CamelFileName">
+        		<method bean="filenameGenerator" method="generateFileName"/>
+      		</setHeader>
+      		<to uri="velocity:mailTemplate.vm"/>
+      		<to uri="file://C:\\sinv\\archive\\atype"/>
+      		<camel:transform>
+				<camel:method bean="centralSucceedResponseTranslator" method="translateToSucceedSystemEnvelope"></camel:method>
+			</camel:transform>
+		</camel:route>
+		
+		<camel:route>
+			<camel:from uri="file://C:\\sinv\\archive\\atype"/>
+			<setHeader headerName="subject">
+        		<constant>new incident reported</constant>
+      		</setHeader>
+      		<setHeader headerName="to">
+        		<camel:constant>onur.karacali@fitcons.com</camel:constant>
+      		</setHeader>
+      		<setHeader headerName="username">
+        		<camel:constant>org.o.karacali@gmail.com</camel:constant>
+      		</setHeader>
+      		<setHeader headerName="port">
+        		<camel:constant>465</camel:constant>
+      		</setHeader>
+      		<setHeader headerName="password">
+        		<camel:constant>movebxecx</camel:constant>
+      		</setHeader>
+			 <to uri="imaps://imaps.gmail.com"/>
+		</camel:route>
+		
+		<camel:route>
+			<camel:from uri="direct:btypeComp"/>
+			<setHeader headerName="CamelFileName">
+        		<method bean="filenameGenerator" method="generateFileName"/>
+      		</setHeader>
+      		<to uri="velocity:mailTemplate.vm"/>
+      		<to uri="file://C:\\sinv\\archive\\btype"/>
+      		<camel:transform>
+				<camel:method bean="centralSucceedResponseTranslator" method="translateToSucceedSystemEnvelope"></camel:method>
+			</camel:transform>
+		</camel:route>
+		
+		<camel:route>
+			<camel:from uri="file://C:\\sinv\\archive\\btype"/>
+			<setHeader headerName="subject">
+        		<constant>new incident reported</constant>
+      		</setHeader>
+      		<setHeader headerName="to">
+        		<camel:simple>onur.karacali@fitcons.com</camel:simple>
+      		</setHeader>
+			 <to uri="smtp://org.o.karacali@gmail.com:587?password=movebxecx"/>
+		</camel:route>
+  	</camel:camelContext>
+</beans>

@@ -1,0 +1,7 @@
+Döküman baþarý ile merkeze iletildi
+Tür : ${body.envType}
+Gönderici ID : ${body.senderIdentifier}
+Gönderici Adý : ${body.senderName}
+Hedef ID : ${body.targetId}
+Hedef Adý : ${body.targetName}
+Mesaj : ${body.comment}

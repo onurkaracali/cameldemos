@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="InvoiceServiceService" targetNamespace="http://service.web.seinv.com/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://service.web.seinv.com/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http">
+  <wsdl:types>
+    <xs:schema elementFormDefault="unqualified" targetNamespace="http://service.web.seinv.com/" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="invoiceSenderEnvelope" type="tns:invoiceSenderEnvelope"/>
+      <xs:element name="invoiceSystemEnvelope" type="tns:invoiceSystemEnvelope"/>
+      <xs:element name="sendDocument" type="tns:sendDocument"/>
+      <xs:element name="sendDocumentResponse" type="tns:sendDocumentResponse"/>
+      <xs:complexType name="sendDocument">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="senderEnv" type="tns:invoiceSenderEnvelope"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="invoiceSenderEnvelope">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="envType" type="xs:int"/>
+          <xs:element minOccurs="0" name="senderIdentifier" type="xs:string"/>
+          <xs:element minOccurs="0" name="senderType" type="xs:int"/>
+          <xs:element minOccurs="0" name="senderName" type="xs:string"/>
+          <xs:element minOccurs="0" name="senderEmail" type="xs:string"/>
+          <xs:element minOccurs="0" name="targetId" type="xs:string"/>
+          <xs:element minOccurs="0" name="targetType" type="xs:int"/>
+          <xs:element minOccurs="0" name="targetName" type="xs:string"/>
+          <xs:element minOccurs="0" name="targetEmail" type="xs:string"/>
+          <xs:element minOccurs="0" name="totalCost" type="xs:int"/>
+          <xs:element minOccurs="0" name="comments" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="sendDocumentResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="tns:invoiceSystemEnvelope"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="invoiceSystemEnvelope">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="result" type="xs:int"/>
+          <xs:element minOccurs="0" name="comment" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="sendDocument">
+    <wsdl:part element="tns:sendDocument" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="sendDocumentResponse">
+    <wsdl:part element="tns:sendDocumentResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="InvoiceService">
+    <wsdl:operation name="sendDocument">
+      <wsdl:input message="tns:sendDocument" name="sendDocument"/>
+      <wsdl:output message="tns:sendDocumentResponse" name="sendDocumentResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="InvoiceServiceServiceSoapBinding" type="tns:InvoiceService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="sendDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="sendDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="sendDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="InvoiceServiceService">
+    <wsdl:port binding="tns:InvoiceServiceServiceSoapBinding" name="InvoiceServicePort">
+      <soap:address location="http://localhost:8080/SimpleInvoiceDemo/webservices/invoice"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
